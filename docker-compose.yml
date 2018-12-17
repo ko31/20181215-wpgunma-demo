@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  db:
+    image: mysql:5.7
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./data:/docker-entrypoint-initdb.d
+    environment:
+      MYSQL_ROOT_PASSWORD: wordpress
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+
+  wordpress:
+    image: wordpress:latest
+    ports:
+      - "8000:80"
+    depends_on:
+      - db
+    volumes:
+      - ./config/php/php-ext.ini:/usr/local/etc/php/conf.d/php-ext.ini
+      - ./wordpress/www:/var/www/html
+      - ./wordpress/mu-plugins/wp-dev-docker-settings.php:/var/www/html/wp-content/mu-plugins/wp-dev-docker-settings.php
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+
+  mailcatcher:
+    image: schickling/mailcatcher
+    ports:
+      - "1025:1025"
+      - "1080:1080"
+
+  adminer:
+    image: adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+volumes:
+  db_data:
